@@ -118,6 +118,18 @@ class Worker(QtCore.QObject):
         try:
             time.sleep(5)
             self.initializeResults()
+            excelPath = get_excel_path()
+            excelLockPath = os.path.join(
+                os.path.dirname(excelPath),
+                '~$' + os.path.basename(excelPath),
+            )
+            if os.path.exists(excelLockPath):
+                message = (
+                    'Excel result write failed: Sheet is open in another program.'
+                )
+                self.logMsg.emit(message)
+                self.popupMsg.emit('Excel write failed', message)
+                return
             if not self.working:
                 raise FlowCancelled()
             if self.scanStartupLog():
@@ -286,7 +298,7 @@ class Worker(QtCore.QObject):
         self.reportProgress(65)
         self.serialPort.write(b'*SET#CRST#1#')
         self.logMsg.emit('Waiting for device to restart and resume normal logging...')
-        self.waitForDeviceRestart(20)
+        self.waitForDeviceRestart(40)
         time.sleep(0.2)
 
     def readCertificateStatus(self):
@@ -482,7 +494,12 @@ class Worker(QtCore.QObject):
             zipfile.BadZipFile,
             InvalidFileException,
         ) as error:
-            message = 'Excel result write failed: {}'.format(error)
+            if isinstance(error, PermissionError):
+                message = (
+                    'Excel result write failed: Sheet is open in another program. '
+                )
+            else:
+                message = 'Excel result write failed: {}'.format(error)
             self.logMsg.emit(message)
             self.popupMsg.emit('Excel write failed', message)
             return False
