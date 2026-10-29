@@ -59,6 +59,7 @@ class Worker(QtCore.QObject):
 
     def work(self):
         while self.working:
+            # time.sleep(10)
             try:
                 if self.serialPort and self.serialPort.is_open:
                     if self.scanRequested:
@@ -68,6 +69,7 @@ class Worker(QtCore.QObject):
                         self.readNormalLog(0.05)
                 else:
                     time.sleep(0.05)
+
             except (OSError, serial.SerialException) as error:
                 message = 'Serial communication failed: {}'.format(error)
                 self.logMsg.emit(message)
@@ -114,6 +116,7 @@ class Worker(QtCore.QObject):
         self.expectedCertSizes = ()
         self.progressChanged.emit(0)
         try:
+            time.sleep(5)
             self.initializeResults()
             if not self.working:
                 raise FlowCancelled()
@@ -284,7 +287,7 @@ class Worker(QtCore.QObject):
         self.serialPort.write(b'*SET#CRST#1#')
         self.logMsg.emit('Waiting for device to restart and resume normal logging...')
         self.waitForDeviceRestart(20)
-        time.sleep(1)
+        time.sleep(0.2)
 
     def readCertificateStatus(self):
         certStatusPattern = r'STATUS#CERT#\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*#'

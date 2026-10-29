@@ -5,7 +5,7 @@ for /f "tokens=2 delims='" %%a in ('findstr /r "BUILD_VERSION=.[\d.]*" service_t
 echo.
 echo Building Device Configuration Tool v%BUILD_VERSION%
 
-pyinstaller -n service_tool_v%BUILD_VERSION% --noconfirm --clean --log-level=WARN ^
+pyinstaller -n cert_flashing_v%BUILD_VERSION% --noconfirm --clean --log-level=WARN ^
 --noconsole ^
 --onefile ^
 --add-data="service_tool.ui;." ^
