@@ -26,3 +26,7 @@ __temp__/
 # Ignore file created by during patch
 *.patch
 *.rej
+
+# ignore file created by Microsoft Excel
+*.xslx
+*.csv

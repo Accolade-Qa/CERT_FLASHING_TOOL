@@ -121,8 +121,8 @@ class Worker(QtCore.QObject):
                 self.logMsg.emit('Line automation device detected. Certificate flow skipped.')
                 self.saveLineAutomationResult()
                 self.popupMsg.emit(
-                    'Line Automation Device',
-                    'Device is in Line automation\n\n Needs to keep aside',
+                    'Default UIN Detected',
+                    'UIN is default\n\nPut device in rejection bin',
                 )
                 return
             if not all(os.path.isfile(path) for path in self.certificatePaths):
