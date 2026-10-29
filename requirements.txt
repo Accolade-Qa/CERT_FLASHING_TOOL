@@ -1,0 +1,7 @@
+# Runtime dependencies
+PyQt5
+pyserial
+openpyxl>=3.1,<4
+
+# Used by deploy.bat to build the Windows executable
+PyInstaller
