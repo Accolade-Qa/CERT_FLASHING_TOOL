@@ -59,6 +59,7 @@ class Worker(QtCore.QObject):
 
     def work(self):
         while self.working:
+            # time.sleep(10)
             try:
                 if self.serialPort and self.serialPort.is_open:
                     if self.scanRequested:
@@ -68,6 +69,7 @@ class Worker(QtCore.QObject):
                         self.readNormalLog(0.05)
                 else:
                     time.sleep(0.05)
+
             except (OSError, serial.SerialException) as error:
                 message = 'Serial communication failed: {}'.format(error)
                 self.logMsg.emit(message)
@@ -114,7 +116,20 @@ class Worker(QtCore.QObject):
         self.expectedCertSizes = ()
         self.progressChanged.emit(0)
         try:
+            time.sleep(5)
             self.initializeResults()
+            excelPath = get_excel_path()
+            excelLockPath = os.path.join(
+                os.path.dirname(excelPath),
+                '~$' + os.path.basename(excelPath),
+            )
+            if os.path.exists(excelLockPath):
+                message = (
+                    'Excel result write failed: Sheet is open in another program.'
+                )
+                self.logMsg.emit(message)
+                self.popupMsg.emit('Excel write failed', message)
+                return
             if not self.working:
                 raise FlowCancelled()
             if self.scanStartupLog():
@@ -283,8 +298,13 @@ class Worker(QtCore.QObject):
         self.reportProgress(65)
         self.serialPort.write(b'*SET#CRST#1#')
         self.logMsg.emit('Waiting for device to restart and resume normal logging...')
+<<<<<<< HEAD
         self.waitForDeviceRestart(20)
         time.sleep(1)
+=======
+        self.waitForDeviceRestart(40)
+        time.sleep(0.2)
+>>>>>>> a6d29fbe8b33df78b148e6fe5fb8b93a094d7e8a
 
     def readCertificateStatus(self):
         certStatusPattern = r'STATUS#CERT#\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*#'
@@ -479,7 +499,12 @@ class Worker(QtCore.QObject):
             zipfile.BadZipFile,
             InvalidFileException,
         ) as error:
-            message = 'Excel result write failed: {}'.format(error)
+            if isinstance(error, PermissionError):
+                message = (
+                    'Excel result write failed: Sheet is open in another program. '
+                )
+            else:
+                message = 'Excel result write failed: {}'.format(error)
             self.logMsg.emit(message)
             self.popupMsg.emit('Excel write failed', message)
             return False
