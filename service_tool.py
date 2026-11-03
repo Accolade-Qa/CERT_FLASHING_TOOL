@@ -118,7 +118,7 @@ class Worker(QtCore.QObject):
             if not self.working:
                 raise FlowCancelled()
             if self.scanStartupLog():
-                self.logMsg.emit('Line automation device detected. Certificate flow skipped.')
+                # self.logMsg.emit('Line automation device detected. Certificate flow skipped.')
                 self.saveLineAutomationResult()
                 self.popupMsg.emit(
                     'Default UIN Detected',
@@ -283,7 +283,7 @@ class Worker(QtCore.QObject):
         self.reportProgress(65)
         self.serialPort.write(b'*SET#CRST#1#')
         self.logMsg.emit('Waiting for device to restart and resume normal logging...')
-        self.waitForDeviceRestart(60)
+        self.waitForDeviceRestart(20)
         time.sleep(1)
 
     def readCertificateStatus(self):

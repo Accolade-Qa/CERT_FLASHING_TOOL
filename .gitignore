@@ -30,3 +30,6 @@ __temp__/
 # ignore file created by Microsoft Excel
 *.xslx
 *.csv
+
+# Ignore file created by virtual environment
+*.venv/
