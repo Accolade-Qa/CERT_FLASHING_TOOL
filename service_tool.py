@@ -298,13 +298,8 @@ class Worker(QtCore.QObject):
         self.reportProgress(65)
         self.serialPort.write(b'*SET#CRST#1#')
         self.logMsg.emit('Waiting for device to restart and resume normal logging...')
-<<<<<<< HEAD
-        self.waitForDeviceRestart(20)
-        time.sleep(1)
-=======
         self.waitForDeviceRestart(40)
         time.sleep(0.2)
->>>>>>> a6d29fbe8b33df78b148e6fe5fb8b93a094d7e8a
 
     def readCertificateStatus(self):
         certStatusPattern = r'STATUS#CERT#\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*#'
