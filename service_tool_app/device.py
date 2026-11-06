@@ -23,6 +23,7 @@ class FlowCancelled(Exception):
 
 class Worker(QtCore.QObject):
     logMsg = QtCore.pyqtSignal(str)
+    uinUpdated = QtCore.pyqtSignal(str)
     errorMsg = QtCore.pyqtSignal(str)
     popupMsg = QtCore.pyqtSignal(str, str)
     progressChanged = QtCore.pyqtSignal(int)
@@ -181,6 +182,7 @@ class Worker(QtCore.QObject):
                 continue
             uin = match.group(1).strip()
             self.results['uin'] = uin
+            self.uinUpdated.emit(uin)
             if self.isDefaultUin(uin):
                 return True
             return False
@@ -220,6 +222,7 @@ class Worker(QtCore.QObject):
             match = re.search(r'\bUIN\s+([A-Za-z0-9_-]+)', responseBuffer, re.IGNORECASE)
             if match:
                 self.results['uin'] = match.group(1)
+                self.uinUpdated.emit(self.results['uin'])
                 break
             if re.search(r'CALID\s+\S+\s*(?:\r?\n)+\s*=+', responseBuffer):
                 break

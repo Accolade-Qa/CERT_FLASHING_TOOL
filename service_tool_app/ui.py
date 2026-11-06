@@ -16,12 +16,16 @@ class ServiceToolUi(QtWidgets.QMainWindow):
         super(ServiceToolUi, self).__init__()
         uic.loadUi(self.get_resource_path(os.path.join('resources', 'service_tool.ui')), self)
         self.comboBoxComPort = self.findChild(QtWidgets.QComboBox, 'comboBoxComPort')
+        self.btnRefreshPorts = self.findChild(QtWidgets.QPushButton, 'btnRefreshPorts')
         self.btnConnect = self.findChild(QtWidgets.QPushButton, 'btnConnect')
         self.progressBar = self.findChild(QtWidgets.QProgressBar, 'progressBarFlow')
         self.labelLogo = self.findChild(QtWidgets.QLabel, 'labelLogo')
         self.labelDateTime = self.findChild(QtWidgets.QLabel, 'labelDateTime')
         self.headerPanel = self.findChild(QtWidgets.QFrame, 'headerPanel')
         self.headerSeparator = self.findChild(QtWidgets.QFrame, 'headerSeparator')
+        self.labelUin = self.findChild(QtWidgets.QLabel, 'labelUin')
+        self.uinPanel = self.findChild(QtWidgets.QFrame, 'uinPanel')
+        self.labelUinValue = self.findChild(QtWidgets.QLabel, 'labelUinValue')
         self.log = self.findChild(QtWidgets.QTextBrowser, 'textBrowserLog')
 
         self.worker = Worker()
@@ -49,10 +53,8 @@ class ServiceToolUi(QtWidgets.QMainWindow):
         self.updateDateTime()
         self.clockTimer.start(1000)
 
-        self.comboBoxComPort.addItems(
-            '{}: {}'.format(port.device, port.description)
-            for port in ports.comports()
-        )
+        self.refreshPorts()
+        self.btnRefreshPorts.clicked.connect(self.refreshPorts)
         self.btnConnect.clicked.connect(self.connectUart)
 
         self.progressResetTimer = QtCore.QTimer(self)
@@ -63,6 +65,7 @@ class ServiceToolUi(QtWidgets.QMainWindow):
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.work)
         self.worker.logMsg.connect(self.logAppend)
+        self.worker.uinUpdated.connect(self.updateUin)
         self.worker.errorMsg.connect(self.showError)
         self.worker.popupMsg.connect(self.showPopup)
         self.worker.progressChanged.connect(self.progressBar.setValue)
@@ -83,8 +86,13 @@ class ServiceToolUi(QtWidgets.QMainWindow):
         rowHeight = max(34, int(height * 0.045))
         progressHeight = max(26, int(height * 0.035))
         buttonWidth = max(100, int(width * 0.09))
+        refreshButtonWidth = max(100, int(width * 0.09))
+        buttonGap = margin
+        uinLabelWidth = 44
         logoWidth = min(int(width * 0.21), 300)
         dateTimeWidth = min(int(width * 0.23), 280)
+        uinPanelWidth = min(max(int(width * 0.25), 280), 320)
+        uinPanelHeight = max(30, rowHeight + 8)
 
         self.headerPanel.setGeometry(0, 0, width, headerHeight)
         self.labelLogo.setGeometry(
@@ -121,23 +129,49 @@ class ServiceToolUi(QtWidgets.QMainWindow):
             )
         )
 
-        controlsY = headerHeight + 2 * margin
+        uinY = headerHeight + margin
+        self.uinPanel.setGeometry(
+            margin + uinLabelWidth + buttonGap,
+            uinY,
+            uinPanelWidth,
+            uinPanelHeight,
+        )
+        self.labelUin.setGeometry(
+            margin,
+            uinY,
+            uinLabelWidth,
+            uinPanelHeight,
+        )
+        self.labelUinValue.setGeometry(
+            10,
+            0,
+            uinPanelWidth - 20,
+            uinPanelHeight - 2,
+        )
+        controlsY = uinY + uinPanelHeight + margin
         self.btnConnect.setGeometry(
             width - margin - buttonWidth,
             controlsY,
             buttonWidth,
             rowHeight,
         )
+        self.btnRefreshPorts.setGeometry(
+            self.btnConnect.geometry().left() - buttonGap - refreshButtonWidth,
+            controlsY,
+            refreshButtonWidth,
+            rowHeight,
+        )
         self.comboBoxComPort.setGeometry(
             margin,
             controlsY,
-            width - 3 * margin - buttonWidth,
+            self.btnRefreshPorts.geometry().left() - margin - buttonGap,
             rowHeight,
         )
         controlsFont = self.comboBoxComPort.font()
         controlsFont.setPointSize(10)
         self.comboBoxComPort.setFont(controlsFont)
         self.btnConnect.setFont(controlsFont)
+        self.btnRefreshPorts.setFont(controlsFont)
         progressY = controlsY + rowHeight + margin
         self.progressBar.setGeometry(
             margin,
@@ -162,11 +196,31 @@ class ServiceToolUi(QtWidgets.QMainWindow):
     def updateDateTime(self):
         currentTime = QtCore.QDateTime.currentDateTime()
         self.labelDateTime.setText(
-            '{}\n    {}'.format(
-                currentTime.toString('dd MM yyyy'),
+            '{}\n    {} \n  '.format(
+                currentTime.toString('dd MMM yyyy'),
                 currentTime.toString('hh:mm:ss AP'),
             )
         )
+
+    def updateUin(self, uin):
+        self.labelUinValue.setText(uin)
+
+    def refreshPorts(self):
+        selectedPort = self.comboBoxComPort.currentText().split(':', 1)[0].strip()
+        availablePorts = list(ports.comports())
+        self.comboBoxComPort.clear()
+        self.comboBoxComPort.addItem('Select Serial Port...')
+
+        selectedIndex = 0
+        for port in availablePorts:
+            self.comboBoxComPort.addItem(
+                '{}: {}'.format(port.device, port.description)
+            )
+            if port.device == selectedPort:
+                selectedIndex = self.comboBoxComPort.count() - 1
+
+        self.comboBoxComPort.setCurrentIndex(selectedIndex)
+        self.logAppend('Serial ports refreshed. Found {} port(s).'.format(len(availablePorts)))
 
     def connectUart(self):
         selectedPort = self.comboBoxComPort.currentText()
@@ -187,6 +241,7 @@ class ServiceToolUi(QtWidgets.QMainWindow):
             self.showError('Could not open {}: {}'.format(portName, error))
             return
         self.comboBoxComPort.setEnabled(False)
+        self.btnRefreshPorts.setEnabled(False)
         self.btnConnect.setEnabled(False)
         self.btnConnect.setText('Connected')
         self.logAppend('Connected to {}. Starting device check and certificate flow...'.format(portName))
@@ -194,6 +249,7 @@ class ServiceToolUi(QtWidgets.QMainWindow):
     def resetForNextCycle(self):
         self.log.clear()
         self.comboBoxComPort.setEnabled(True)
+        self.btnRefreshPorts.setEnabled(True)
         self.btnConnect.setText('Connect')
         self.btnConnect.setEnabled(True)
         self.progressBar.setValue(100)
