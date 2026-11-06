@@ -4,6 +4,7 @@ build/
 dist/
 *.tar.gz
 __pycache__/
+*.py[cod]
 __temp__/
 *.pydevproject
 *.spec
