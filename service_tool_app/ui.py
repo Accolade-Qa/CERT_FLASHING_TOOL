@@ -19,6 +19,8 @@ class ServiceToolUi(QtWidgets.QMainWindow):
         self.btnConnect = self.findChild(QtWidgets.QPushButton, 'btnConnect')
         self.progressBar = self.findChild(QtWidgets.QProgressBar, 'progressBarFlow')
         self.labelLogo = self.findChild(QtWidgets.QLabel, 'labelLogo')
+        self.labelDateTime = self.findChild(QtWidgets.QLabel, 'labelDateTime')
+        self.headerPanel = self.findChild(QtWidgets.QFrame, 'headerPanel')
         self.headerSeparator = self.findChild(QtWidgets.QFrame, 'headerSeparator')
         self.log = self.findChild(QtWidgets.QTextBrowser, 'textBrowserLog')
 
@@ -33,36 +35,19 @@ class ServiceToolUi(QtWidgets.QMainWindow):
         logoPixmap = QPixmap(logoPath)
         if logoPixmap.isNull():
             raise OSError('Could not load logo image: {}'.format(logoPath))
-        samplePixmap = logoPixmap.scaled(256, 256, QtCore.Qt.IgnoreAspectRatio)
-        sampleImage = samplePixmap.toImage()
-        left, top = sampleImage.width(), sampleImage.height()
-        right, bottom = -1, -1
-        for y in range(sampleImage.height()):
-            for x in range(sampleImage.width()):
-                color = sampleImage.pixelColor(x, y)
-                if color.alpha() and min(color.red(), color.green(), color.blue()) < 245:
-                    left, top = min(left, x), min(top, y)
-                    right, bottom = max(right, x), max(bottom, y)
-        if right < left or bottom < top:
-            raise OSError('Logo image contains no visible content: {}'.format(logoPath))
-        sourceLeft = left * logoPixmap.width() // sampleImage.width()
-        sourceTop = top * logoPixmap.height() // sampleImage.height()
-        sourceRight = (right + 1) * logoPixmap.width() // sampleImage.width()
-        sourceBottom = (bottom + 1) * logoPixmap.height() // sampleImage.height()
-        visibleLogo = logoPixmap.copy(
-            sourceLeft,
-            sourceTop,
-            sourceRight - sourceLeft,
-            sourceBottom - sourceTop,
-        )
         self.labelLogo.setPixmap(
-            visibleLogo.scaled(
+            logoPixmap.scaled(
                 self.labelLogo.size(),
                 QtCore.Qt.KeepAspectRatio,
                 QtCore.Qt.SmoothTransformation,
             )
         )
-        self.logoPixmap = visibleLogo
+        self.logoPixmap = logoPixmap
+
+        self.clockTimer = QtCore.QTimer(self)
+        self.clockTimer.timeout.connect(self.updateDateTime)
+        self.updateDateTime()
+        self.clockTimer.start(1000)
 
         self.comboBoxComPort.addItems(
             '{}: {}'.format(port.device, port.description)
@@ -94,28 +79,39 @@ class ServiceToolUi(QtWidgets.QMainWindow):
         width = self.centralWidget().width()
         height = self.centralWidget().height()
         margin = max(16, int(width * 0.02))
-        headerHeight = max(88, int(height * 0.15))
+        headerHeight = max(112, min(150, int(height * 0.17)))
         rowHeight = max(34, int(height * 0.045))
         progressHeight = max(26, int(height * 0.035))
         buttonWidth = max(100, int(width * 0.09))
-        gap = max(28, int(width * 0.025))
+        logoWidth = min(int(width * 0.21), 300)
+        dateTimeWidth = min(int(width * 0.23), 280)
 
+        self.headerPanel.setGeometry(0, 0, width, headerHeight)
         self.labelLogo.setGeometry(
             margin,
-            margin,
-            min(int(width * 0.23), 340),
-            headerHeight - 2 * margin,
+            (headerHeight - min(64, headerHeight - 20)) // 2,
+            logoWidth,
+            min(64, headerHeight - 20),
         )
         self.labelVersion.setGeometry(
-            self.labelLogo.geometry().right() + gap,
-            margin,
-            width - self.labelLogo.geometry().right() - gap - margin,
-            headerHeight - 2 * margin,
+            (width - min(int(width * 0.42), 520)) // 2,
+            0,
+            min(int(width * 0.42), 520),
+            headerHeight,
         )
         titleFont = self.labelVersion.font()
         titleFont.setPointSize(max(16, min(23, int(height * 0.024))))
         self.labelVersion.setFont(titleFont)
-        self.labelVersion.setAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft)
+        self.labelVersion.setAlignment(QtCore.Qt.AlignCenter)
+        self.labelDateTime.setGeometry(
+            width - margin - dateTimeWidth,
+            0,
+            dateTimeWidth,
+            headerHeight,
+        )
+        dateTimeFont = self.labelDateTime.font()
+        dateTimeFont.setPointSize(max(9, min(12, int(height * 0.014))))
+        self.labelDateTime.setFont(dateTimeFont)
         self.headerSeparator.setGeometry(margin, headerHeight, width - 2 * margin, 2)
         self.labelLogo.setPixmap(
             self.logoPixmap.scaled(
@@ -162,6 +158,15 @@ class ServiceToolUi(QtWidgets.QMainWindow):
         logFont = self.log.font()
         logFont.setPointSize(9)
         self.log.setFont(logFont)
+
+    def updateDateTime(self):
+        currentTime = QtCore.QDateTime.currentDateTime()
+        self.labelDateTime.setText(
+            '{}\n    {}'.format(
+                currentTime.toString('dd MM yyyy'),
+                currentTime.toString('hh:mm:ss AP'),
+            )
+        )
 
     def connectUart(self):
         selectedPort = self.comboBoxComPort.currentText()
@@ -217,4 +222,3 @@ class ServiceToolUi(QtWidgets.QMainWindow):
             event.ignore()
             return
         event.accept()
-

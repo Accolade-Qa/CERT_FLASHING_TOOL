@@ -11,38 +11,67 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>CERT FLASHING TOOL</string>
+   <string>CERTIFICATES FLASHING TOOL</string>
   </property>
   <widget class="QWidget" name="centralwidget">
+   <widget class="QFrame" name="headerPanel">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>600</width>
+      <height>50</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: #2a72c0;
+border: none;</string>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::NoFrame</enum>
+    </property>
+   </widget>
    <widget class="QLabel" name="labelVersion">
     <property name="geometry">
      <rect>
-      <x>195</x>
+      <x>200</x>
       <y>22</y>
-      <width>385</width>
-      <height>42</height>
+      <width>200</width>
+      <height>50</height>
      </rect>
     </property>
     <property name="font">
      <font>
       <family>Fira Sans</family>
-      <pointsize>16</pointsize>
-      <weight>50</weight>
-      <bold>false</bold>
+      <pointsize>18</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
      </font>
     </property>
+    <property name="styleSheet">
+     <string notr="true">color: white;
+background: transparent;
+border: none;</string>
+    </property>
     <property name="text">
+     <string>CERT FLASHING TOOL</string>
+    </property>
+        <property name="text">
      <string>CERT FLASHING TOOL</string>
     </property>
    </widget>
    <widget class="QLabel" name="labelLogo">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>12</y>
+      <x>18</x>
+      <y>15</y>
       <width>155</width>
-      <height>55</height>
+      <height>60</height>
      </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background: transparent;
+border: none;</string>
     </property>
     <property name="text">
      <string/>
@@ -59,6 +88,35 @@
      <enum>QFrame::Sunken</enum>
     </property>
    </widget>
+   <widget class="QLabel" name="labelDateTime">
+    <property name="geometry">
+     <rect>
+      <x>425</x>
+      <y>18</y>
+      <width>160</width>
+      <height>55</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Fira Sans</family>
+      <pointsize>10</pointsize>
+      <weight>50</weight>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: white;
+background: transparent;
+border: none;</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignVCenter</set>
+    </property>
+   </widget>
    <widget class="QComboBox" name="comboBoxComPort">
     <property name="geometry">
      <rect>
@@ -67,6 +125,21 @@
       <width>461</width>
       <height>31</height>
      </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QComboBox {
+    background-color: #F8FAFC;
+    color: #1E293B;
+    border: 1px solid #CBD5E1;
+    border-radius: 8px;
+    padding: 5px 10px;
+}
+QComboBox:hover {
+    border-color: #2A72C0;
+}
+QComboBox:focus {
+    border: 1px solid #2A72C0;
+}</string>
     </property>
     <property name="editable">
      <bool>false</bool>
@@ -85,6 +158,24 @@
       <width>90</width>
       <height>31</height>
      </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+    background-color: #2A72C0;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 5px 12px;
+}
+QPushButton:hover {
+    background-color: #205F9F;
+}
+QPushButton:pressed {
+    background-color: #174F8A;
+}
+QPushButton:disabled {
+    background-color: #94A3B8;
+}</string>
     </property>
     <property name="text">
      <string>Connect</string>
@@ -106,8 +197,11 @@
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">background:black;
-color:white;</string>
+     <string notr="true">background-color: #0F172A;
+color: #F8FAFC;
+border: 1px solid #334155;
+border-radius: 8px;
+padding: 8px;</string>
     </property>
    </widget>
    <widget class="QProgressBar" name="progressBarFlow">
@@ -115,9 +209,22 @@ color:white;</string>
      <rect>
       <x>20</x>
       <y>120</y>
-      <width>561</width>
+      <width>500</width>
       <height>25</height>
      </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QProgressBar {
+    background-color: #E2E8F0;
+    color: #1E293B;
+    border: 1px solid #CBD5E1;
+    border-radius: 7px;
+    text-align: center;
+}
+QProgressBar::chunk {
+    background-color: #2A72C0;
+    border-radius: 6px;
+}</string>
     </property>
     <property name="value">
      <number>0</number>
